@@ -4,125 +4,62 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Operations Load Diagnostic</title>
-  <style>
-    :root {
-      --bg: #f5f7fb;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #475569;
-      --accent: #0f766e;
-      --border: #dbe2ea;
-    }
-
-    * { box-sizing: border-box; }
-
-    body {
-      margin: 0;
-      font-family: "Segoe UI", Tahoma, sans-serif;
-      color: var(--text);
-      background: radial-gradient(circle at top right, #e0f2fe 0%, var(--bg) 40%);
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-    }
-
-    .card {
-      width: min(840px, 100%);
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 28px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
-    }
-
-    h1 {
-      margin: 0 0 8px 0;
-      font-size: clamp(1.4rem, 2vw + 0.6rem, 2rem);
-    }
-
-    p {
-      margin: 0 0 14px 0;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    .pill {
-      display: inline-block;
-      font-size: 0.82rem;
-      border: 1px solid #bae6fd;
-      color: #0c4a6e;
-      background: #e0f2fe;
-      border-radius: 999px;
-      padding: 4px 10px;
-      margin-bottom: 14px;
-    }
-
-    .grid {
-      display: grid;
-      gap: 12px;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      margin: 18px 0;
-    }
-
-    .item {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      background: #fbfdff;
-    }
-
-    .item h2 {
-      margin: 0 0 8px 0;
-      font-size: 1rem;
-    }
-
-    .item p {
-      margin: 0;
-      font-size: 0.92rem;
-    }
-
-    code {
-      background: #eef2f7;
-      border: 1px solid #dde4ec;
-      border-radius: 6px;
-      padding: 2px 6px;
-    }
-
-    .footer {
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #334155;
-    }
-  </style>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main class="card">
-    <span class="pill">Deployed Successfully</span>
-    <h1>Operations Load Diagnostic</h1>
-    <p>
-      This repository is a lightweight, read-only diagnostic tool for logistics operations teams.
-      It classifies inbound operational communications and produces a static workload report.
-    </p>
+  <main class="app-shell">
+    <header class="hero">
+      <span class="pill">Read-only Diagnostic</span>
+      <h1>Operations Load Diagnostic</h1>
+      <p>Upload a CSV or text batch of inbound communications, generate a static diagnostic snapshot, and export a client-ready PDF report.</p>
+    </header>
 
-    <div class="grid">
-      <section class="item">
-        <h2>How to Run</h2>
-        <p>Install and run locally with: <code>pip install -e .</code> then <code>ops-diagnostic --mode csv --input examples/sample_inbound.csv --format both</code>.</p>
-      </section>
-      <section class="item">
-        <h2>Output</h2>
-        <p>Reports are generated in the <code>output/</code> folder as Markdown/HTML plus a summary JSON.</p>
-      </section>
-      <section class="item">
-        <h2>Input Modes</h2>
-        <p>CSV, plain text batch, and optional read-only IMAP ingestion are supported.</p>
-      </section>
-    </div>
+    <section class="panel">
+      <h2>Input</h2>
+      <div class="form-grid">
+        <label>
+          Input mode
+          <select id="inputMode">
+            <option value="csv">CSV upload</option>
+            <option value="text">Plain text batch upload</option>
+          </select>
+        </label>
+        <label>
+          Lookback days
+          <input id="lookbackDays" type="number" min="1" max="30" value="14" />
+        </label>
+        <label>
+          Max items
+          <input id="maxItems" type="number" min="10" max="300" value="200" />
+        </label>
+      </div>
 
-    <p class="footer">
-      If you still see a 404 after redeploy, verify Vercel Project Settings -> Root Directory is set to repository root (<code>.</code>).
-    </p>
+      <label class="file-label">
+        Upload file
+        <input id="fileInput" type="file" accept=".csv,.txt" />
+      </label>
+
+      <label>
+        Optional plain text paste (used if no file selected)
+        <textarea id="textInput" rows="6" placeholder="Paste text batch here. Use --- between messages."></textarea>
+      </label>
+
+      <div class="actions">
+        <button id="generateBtn" type="button">Generate Diagnostic</button>
+        <button id="sampleBtn" type="button" class="secondary">Load Sample CSV</button>
+        <button id="pdfBtn" type="button" class="secondary" disabled>Download PDF Report</button>
+      </div>
+      <p id="status" class="status"></p>
+    </section>
+
+    <section class="panel hidden" id="reportPanel">
+      <h2>Diagnostic Report</h2>
+      <div id="reportRoot"></div>
+    </section>
   </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="./app.js" defer></script>
 </body>
 </html>

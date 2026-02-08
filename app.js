@@ -1,10 +1,12 @@
-﻿const WORK_CATEGORIES = [
+﻿const OTHER_CATEGORY = "Unstructured / Ad-hoc Requests";
+
+const WORK_CATEGORIES = [
   "Tracking / ETA",
   "Exception / Delay",
   "Documentation",
   "Rate / Pricing",
   "Internal Coordination",
-  "Other",
+  OTHER_CATEGORY,
 ];
 
 const HANDLING_MINUTES = {
@@ -13,7 +15,7 @@ const HANDLING_MINUTES = {
   Documentation: 7,
   "Rate / Pricing": 8,
   "Internal Coordination": 6,
-  Other: 5,
+  [OTHER_CATEGORY]: 5,
 };
 
 const CATEGORY_KEYWORDS = {
@@ -247,7 +249,7 @@ function classifyItem(item) {
     scores[category] = score;
   });
 
-  let category = "Other";
+  let category = OTHER_CATEGORY;
   let topScore = 0;
   WORK_CATEGORIES.forEach((cat) => {
     const score = scores[cat] || 0;
@@ -264,7 +266,7 @@ function classifyItem(item) {
   const risk = isSla ? "SLA-sensitive" : "Not SLA-sensitive";
 
   let confidence = 0.5;
-  if (category !== "Other") {
+  if (category !== OTHER_CATEGORY) {
     confidence = Math.min(0.95, 0.55 + topScore * 0.1);
   }
 
@@ -384,7 +386,7 @@ function aggregate(classifiedItems, lookbackDays) {
 
   const estimatedMinutesByCategory = {};
   Object.entries(categoryCounts).forEach(([k, v]) => {
-    estimatedMinutesByCategory[k] = v * (HANDLING_MINUTES[k] || HANDLING_MINUTES.Other);
+    estimatedMinutesByCategory[k] = v * (HANDLING_MINUTES[k] || HANDLING_MINUTES[OTHER_CATEGORY]);
   });
 
   const estimatedTotalMinutes = Object.values(estimatedMinutesByCategory).reduce((sum, n) => sum + n, 0);
@@ -450,6 +452,8 @@ function leverageSummary(metrics) {
   } else {
     lines.push(`Estimated workload is ${metrics.estimatedHoursPerWeek} hours/week; use this as a baseline before deeper implementation.`);
   }
+
+  lines.push("If automated, the first leverage point would be repetitive Tracking/ETA and Documentation requests, while keeping Exception and SLA-sensitive flows human-in-the-loop.");
 
   return lines;
 }
@@ -553,6 +557,9 @@ function renderReport(report) {
 
     <h3 class="section-title">2. Work Category Breakdown</h3>
     ${tableHtml(["Work Category", "Volume", "% of Inbound", "Estimated Minutes"], categoryRows)}
+    ${metrics.categoryCounts[OTHER_CATEGORY]
+      ? `<p><strong>${safeHtml(OTHER_CATEGORY)}:</strong> These are non-standard requests that currently require manual reading and routing.</p>`
+      : ""}
 
     <h3 class="section-title">3. Repetitive vs Exception Work</h3>
     ${tableHtml(["Work Nature", "Volume", "% of Inbound"], natureRows)}
@@ -651,6 +658,9 @@ function exportPdf(report) {
 
   writeParagraph("2. Work Category Breakdown", 12, "bold", 8);
   table(["Work Category", "Volume", "% of Inbound", "Estimated Minutes"], categoryRows);
+  if ((metrics.categoryCounts[OTHER_CATEGORY] || 0) > 0) {
+    writeParagraph(`${OTHER_CATEGORY}: These are non-standard requests that currently require manual reading and routing.`, 10.5, "normal", 8);
+  }
 
   writeParagraph("3. Repetitive vs Exception Work", 12, "bold", 8);
   table(["Work Nature", "Volume", "% of Inbound"], natureRows);
@@ -777,6 +787,8 @@ el.pdfBtn.addEventListener("click", () => {
 
 updateFileMeta();
 setStatus("Upload a file or load the sample to begin. Build: 2026-02-08-2.");
+
+
 
 
 

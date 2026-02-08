@@ -10,7 +10,7 @@
 const HANDLING_MINUTES = {
   "Tracking / ETA": 4,
   "Exception / Delay": 12,
-  "Documentation": 7,
+  Documentation: 7,
   "Rate / Pricing": 8,
   "Internal Coordination": 6,
   Other: 5,
@@ -19,32 +19,32 @@ const HANDLING_MINUTES = {
 const CATEGORY_KEYWORDS = {
   "Exception / Delay": [
     "delay", "late", "missed", "issue", "problem", "stuck", "hold", "damaged",
-    "shortage", "escalat", "failed delivery", "cancelled", "detention", "demurrage"
+    "shortage", "escalat", "failed delivery", "cancelled", "detention", "demurrage",
   ],
   "Tracking / ETA": [
     "eta", "track", "tracking", "status update", "where is", "arrival time",
-    "delivery time", "in transit"
+    "delivery time", "in transit",
   ],
   Documentation: [
     "invoice", "pod", "bill of lading", "bol", "awb", "packing list", "customs",
-    "document", "paperwork", "declaration", "certificate", "forms"
+    "document", "paperwork", "declaration", "certificate", "forms",
   ],
   "Rate / Pricing": [
-    "rate", "pricing", "quote", "quotation", "cost", "charge", "tariff", "spot rate"
+    "rate", "pricing", "quote", "quotation", "cost", "charge", "tariff", "spot rate",
   ],
   "Internal Coordination": [
     "please coordinate", "warehouse", "dispatch", "driver", "pickup schedule", "handover",
-    "internal", "team", "ops", "arrange pickup"
+    "internal", "team", "ops", "arrange pickup",
   ],
 };
 
 const EXCEPTION_KEYWORDS = [
-  "urgent", "escalat", "problem", "failed", "delay", "late", "stuck", "damage", "asap", "critical"
+  "urgent", "escalat", "problem", "failed", "delay", "late", "stuck", "damage", "asap", "critical",
 ];
 
 const SLA_KEYWORDS = [
   "urgent", "asap", "today", "immediately", "deadline", "cutoff", "cut-off", "demurrage",
-  "detention", "customer waiting", "sla", "missed"
+  "detention", "customer waiting", "sla", "missed",
 ];
 
 const state = {
@@ -56,6 +56,7 @@ const el = {
   lookbackDays: document.getElementById("lookbackDays"),
   maxItems: document.getElementById("maxItems"),
   fileInput: document.getElementById("fileInput"),
+  fileMeta: document.getElementById("fileMeta"),
   textInput: document.getElementById("textInput"),
   generateBtn: document.getElementById("generateBtn"),
   sampleBtn: document.getElementById("sampleBtn"),
@@ -70,16 +71,36 @@ function setStatus(message, isError = false) {
   el.status.classList.toggle("error", isError);
 }
 
+function humanFileSize(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) {
+    return "0 B";
+  }
+  const units = ["B", "KB", "MB", "GB"];
+  let value = bytes;
+  let idx = 0;
+  while (value >= 1024 && idx < units.length - 1) {
+    value /= 1024;
+    idx += 1;
+  }
+  const rounded = idx === 0 ? value.toFixed(0) : value.toFixed(1);
+  return `${rounded} ${units[idx]}`;
+}
+
+function updateFileMeta() {
+  const file = el.fileInput.files[0];
+  if (!file) {
+    el.fileMeta.textContent = "No file selected.";
+    return;
+  }
+  el.fileMeta.textContent = `Selected: ${file.name} (${humanFileSize(file.size)})`;
+}
+
 function parseTimestamp(value) {
   if (!value || !String(value).trim()) {
     return null;
   }
   const raw = String(value).trim();
-  const candidates = [
-    raw,
-    raw.replace(" ", "T"),
-    raw.endsWith("Z") ? raw : `${raw}Z`,
-  ];
+  const candidates = [raw, raw.replace(" ", "T"), raw.endsWith("Z") ? raw : `${raw}Z`];
 
   for (const candidate of candidates) {
     const dt = new Date(candidate);
@@ -151,56 +172,61 @@ function normalizeCsvItems(text) {
     body: headers.indexOf("body"),
   };
 
-  return rows.slice(1).map((row, i) => {
-    const subject = idx.subject >= 0 ? String(row[idx.subject] || "").trim() : "";
-    const body = idx.body >= 0 ? String(row[idx.body] || "").trim() : "";
-    return {
-      id: `csv-${i + 1}`,
-      timestamp: idx.timestamp >= 0 ? parseTimestamp(row[idx.timestamp]) : null,
-      sender: idx.sender >= 0 ? String(row[idx.sender] || "").trim() : "",
-      subject,
-      body,
-      source: "csv",
-    };
-  }).filter((item) => item.subject || item.body);
+  return rows
+    .slice(1)
+    .map((row, i) => {
+      const subject = idx.subject >= 0 ? String(row[idx.subject] || "").trim() : "";
+      const body = idx.body >= 0 ? String(row[idx.body] || "").trim() : "";
+      return {
+        id: `csv-${i + 1}`,
+        timestamp: idx.timestamp >= 0 ? parseTimestamp(row[idx.timestamp]) : null,
+        sender: idx.sender >= 0 ? String(row[idx.sender] || "").trim() : "",
+        subject,
+        body,
+        source: "csv",
+      };
+    })
+    .filter((item) => item.subject || item.body);
 }
 
 function normalizeTextBatchItems(text) {
   const blocks = text.split(/^\s*---\s*$/m).map((x) => x.trim()).filter(Boolean);
-  return blocks.map((block, i) => {
-    const lines = block.split(/\r?\n/);
-    const readHeader = (name) => {
-      const line = lines.find((entry) => entry.toLowerCase().startsWith(`${name}:`));
-      return line ? line.split(":").slice(1).join(":").trim() : "";
-    };
+  return blocks
+    .map((block, i) => {
+      const lines = block.split(/\r?\n/);
+      const readHeader = (name) => {
+        const line = lines.find((entry) => entry.toLowerCase().startsWith(`${name}:`));
+        return line ? line.split(":").slice(1).join(":").trim() : "";
+      };
 
-    const timestamp = parseTimestamp(readHeader("timestamp"));
-    const sender = readHeader("sender");
-    let subject = readHeader("subject");
+      const timestamp = parseTimestamp(readHeader("timestamp"));
+      const sender = readHeader("sender");
+      let subject = readHeader("subject");
 
-    const bodyMarker = block.match(/^body\s*:\s*$/im);
-    let body = "";
-    if (bodyMarker) {
-      const split = block.split(/^body\s*:\s*$/im);
-      body = split.slice(1).join("\n").trim();
-    } else {
-      body = block;
-    }
+      const bodyMarker = block.match(/^body\s*:\s*$/im);
+      let body = "";
+      if (bodyMarker) {
+        const split = block.split(/^body\s*:\s*$/im);
+        body = split.slice(1).join("\n").trim();
+      } else {
+        body = block;
+      }
 
-    if (!subject) {
-      const firstLine = (body.split(/\r?\n/).find(Boolean) || "").trim();
-      subject = firstLine.length > 80 ? `${firstLine.slice(0, 80)}...` : firstLine;
-    }
+      if (!subject) {
+        const firstLine = (body.split(/\r?\n/).find(Boolean) || "").trim();
+        subject = firstLine.length > 80 ? `${firstLine.slice(0, 80)}...` : firstLine;
+      }
 
-    return {
-      id: `text-${i + 1}`,
-      timestamp,
-      sender,
-      subject,
-      body,
-      source: "text",
-    };
-  }).filter((item) => item.subject || item.body);
+      return {
+        id: `text-${i + 1}`,
+        timestamp,
+        sender,
+        subject,
+        body,
+        source: "text",
+      };
+    })
+    .filter((item) => item.subject || item.body);
 }
 
 function containsAny(text, phrases) {
@@ -291,9 +317,7 @@ function aggregate(classifiedItems, lookbackDays) {
     };
   }
 
-  const timestamps = classifiedItems
-    .map((x) => x.item.timestamp)
-    .filter((x) => x instanceof Date);
+  const timestamps = classifiedItems.map((x) => x.item.timestamp).filter((x) => x instanceof Date);
 
   let periodDays = lookbackDays;
   if (timestamps.length) {
@@ -336,7 +360,7 @@ function aggregate(classifiedItems, lookbackDays) {
   });
 
   const estimatedTotalMinutes = Object.values(estimatedMinutesByCategory).reduce((sum, n) => sum + n, 0);
-  const estimatedHoursPerWeek = Math.round(((estimatedTotalMinutes / 60) * (7 / periodDays)) * 10) / 10;
+  const estimatedHoursPerWeek = Math.round((estimatedTotalMinutes / 60) * (7 / periodDays) * 10) / 10;
 
   const slaCountsByCategory = {};
   classifiedItems.forEach((x) => {
@@ -345,13 +369,10 @@ function aggregate(classifiedItems, lookbackDays) {
       slaCountsByCategory[key] = (slaCountsByCategory[key] || 0) + 1;
     }
   });
+
   const totalSla = Object.values(slaCountsByCategory).reduce((sum, n) => sum + n, 0);
   const slaClusters = Object.entries(slaCountsByCategory)
-    .map(([category, count]) => ({
-      category,
-      count,
-      shareOfSla: percent(count, totalSla),
-    }))
+    .map(([category, count]) => ({ category, count, shareOfSla: percent(count, totalSla) }))
     .sort((a, b) => b.count - a.count);
 
   return {
@@ -375,7 +396,7 @@ function leverageSummary(metrics) {
     return ["No inbound items in selected window; no leverage estimate available."];
   }
 
-  const repetitivePct = metrics.naturePercentages["Repetitive"] || 0;
+  const repetitivePct = metrics.naturePercentages.Repetitive || 0;
   const slaPct = metrics.riskPercentages["SLA-sensitive"] || 0;
   const topCats = Object.entries(metrics.categoryCounts).sort((a, b) => b[1] - a[1]).slice(0, 2);
 
@@ -423,6 +444,31 @@ function tableHtml(headers, rows) {
   return `<table>${thead}${tbody}</table>`;
 }
 
+function barsHtml(title, rows) {
+  if (!rows.length) {
+    return `<article class="viz-card"><h4 class="viz-title">${safeHtml(title)}</h4><small>No data available.</small></article>`;
+  }
+
+  const bars = rows
+    .map((row) => {
+      const width = Math.max(2, Math.min(100, Number(row.value) || 0));
+      return `
+        <div class="viz-row">
+          <div class="viz-row-head">
+            <span>${safeHtml(row.label)}</span>
+            <strong>${safeHtml(`${row.value}%`)}</strong>
+          </div>
+          <div class="viz-track">
+            <div class="viz-fill" style="width:${width}%"></div>
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+
+  return `<article class="viz-card"><h4 class="viz-title">${safeHtml(title)}</h4><div class="viz-bars">${bars}</div></article>`;
+}
+
 function renderReport(report) {
   const metrics = report.metrics;
   const categoryRows = Object.entries(metrics.categoryCounts)
@@ -442,6 +488,13 @@ function renderReport(report) {
 
   const slaRows = metrics.slaClusters.map((x) => [x.category, String(x.count), `${x.shareOfSla}%`]);
 
+  const categoryVizRows = Object.entries(metrics.categoryPercentages)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([label, value]) => ({ label, value }));
+
+  const slaVizRows = metrics.slaClusters.map((x) => ({ label: x.category, value: x.shareOfSla }));
+
   const html = `
     <div class="report-grid">
       <article class="metric">
@@ -460,6 +513,11 @@ function renderReport(report) {
         <p class="metric-title">SLA-sensitive Share</p>
         <p class="metric-value">${metrics.riskPercentages["SLA-sensitive"] || 0}%</p>
       </article>
+    </div>
+
+    <div class="visual-grid">
+      ${barsHtml("Work Category Distribution", categoryVizRows)}
+      ${barsHtml("SLA-sensitive Cluster Share", slaVizRows)}
     </div>
 
     <h3 class="section-title">1. Inbound Volume Snapshot</h3>
@@ -494,6 +552,7 @@ function renderReport(report) {
 
   el.reportRoot.innerHTML = html;
   el.reportPanel.classList.remove("hidden");
+  el.reportPanel.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function exportPdf(report) {
@@ -530,7 +589,7 @@ function exportPdf(report) {
       startY,
       margin: { left: margin, right: margin },
       styles: { fontSize: 9.5, cellPadding: 5 },
-      headStyles: { fillColor: [14, 116, 144] },
+      headStyles: { fillColor: [17, 126, 118] },
     });
     y = doc.lastAutoTable.finalY + 14;
     if (y > pageHeight - margin) {
@@ -548,11 +607,13 @@ function exportPdf(report) {
       `${metrics.categoryPercentages[category] || 0}%`,
       String(metrics.estimatedMinutesByCategory[category] || 0),
     ]);
+
   const natureRows = Object.entries(metrics.natureCounts).map(([name, count]) => [
     name,
     String(count),
     `${metrics.naturePercentages[name] || 0}%`,
   ]);
+
   const slaRows = metrics.slaClusters.map((x) => [x.category, String(x.count), `${x.shareOfSla}%`]);
 
   writeParagraph("Operations Load Diagnostic Report", 16, "bold", 8);
@@ -655,6 +716,7 @@ async function loadSample() {
     el.inputMode.value = "csv";
     el.textInput.value = text;
     el.fileInput.value = "";
+    updateFileMeta();
     setStatus("Sample loaded. Click 'Generate Diagnostic'.");
   } catch (err) {
     setStatus(err.message || "Failed to load sample.", true);
@@ -663,6 +725,8 @@ async function loadSample() {
 
 el.generateBtn.addEventListener("click", runDiagnostic);
 el.sampleBtn.addEventListener("click", loadSample);
+el.fileInput.addEventListener("change", updateFileMeta);
+
 el.pdfBtn.addEventListener("click", () => {
   if (!state.report) {
     setStatus("Generate a diagnostic first.", true);
@@ -676,4 +740,5 @@ el.pdfBtn.addEventListener("click", () => {
   }
 });
 
+updateFileMeta();
 setStatus("Upload a file or load the sample to begin.");

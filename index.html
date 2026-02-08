@@ -7,53 +7,106 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
+  <div class="bg-orb orb-a"></div>
+  <div class="bg-orb orb-b"></div>
+
   <main class="app-shell">
-    <header class="hero">
-      <span class="pill">Read-only Diagnostic</span>
+    <header class="hero card reveal">
+      <div class="hero-top">
+        <span class="pill">Read-Only | One-Time Diagnostic</span>
+        <span class="hero-meta">Client Call Mode</span>
+      </div>
       <h1>Operations Load Diagnostic</h1>
-      <p>Upload a CSV or text batch of inbound communications, generate a static diagnostic snapshot, and export a client-ready PDF report.</p>
+      <p>
+        Upload a short inbound communication slice, classify operational demand patterns,
+        and export a clear PDF report your clients can understand in under five minutes.
+      </p>
+
+      <div class="steps">
+        <article class="step">
+          <span>01</span>
+          <h3>Upload</h3>
+          <p>CSV or plain text batch.</p>
+        </article>
+        <article class="step">
+          <span>02</span>
+          <h3>Diagnose</h3>
+          <p>Category, workload, SLA profile.</p>
+        </article>
+        <article class="step">
+          <span>03</span>
+          <h3>Export</h3>
+          <p>Shareable client-ready PDF.</p>
+        </article>
+      </div>
     </header>
 
-    <section class="panel">
-      <h2>Input</h2>
-      <div class="form-grid">
-        <label>
-          Input mode
-          <select id="inputMode">
-            <option value="csv">CSV upload</option>
-            <option value="text">Plain text batch upload</option>
-          </select>
-        </label>
-        <label>
-          Lookback days
-          <input id="lookbackDays" type="number" min="1" max="30" value="14" />
-        </label>
-        <label>
-          Max items
-          <input id="maxItems" type="number" min="10" max="300" value="200" />
-        </label>
-      </div>
+    <section class="workspace reveal">
+      <section class="panel card">
+        <h2>Diagnostic Input</h2>
 
-      <label class="file-label">
-        Upload file
-        <input id="fileInput" type="file" accept=".csv,.txt" />
-      </label>
+        <div class="form-grid">
+          <label>
+            Input mode
+            <select id="inputMode">
+              <option value="csv">CSV upload</option>
+              <option value="text">Plain text batch upload</option>
+            </select>
+          </label>
 
-      <label>
-        Optional plain text paste (used if no file selected)
-        <textarea id="textInput" rows="6" placeholder="Paste text batch here. Use --- between messages."></textarea>
-      </label>
+          <label>
+            Lookback days
+            <input id="lookbackDays" type="number" min="1" max="30" value="14" />
+          </label>
 
-      <div class="actions">
-        <button id="generateBtn" type="button">Generate Diagnostic</button>
-        <button id="sampleBtn" type="button" class="secondary">Load Sample CSV</button>
-        <button id="pdfBtn" type="button" class="secondary" disabled>Download PDF Report</button>
-      </div>
-      <p id="status" class="status"></p>
+          <label>
+            Max items
+            <input id="maxItems" type="number" min="10" max="300" value="200" />
+          </label>
+        </div>
+
+        <label class="drop-zone" for="fileInput">
+          <strong>Drop file here or click to browse</strong>
+          <small>Accepted: .csv, .txt</small>
+          <input id="fileInput" type="file" accept=".csv,.txt" />
+        </label>
+        <p id="fileMeta" class="file-meta">No file selected.</p>
+
+        <label>
+          Optional plain text paste (used if no file selected)
+          <textarea id="textInput" rows="6" placeholder="Paste text batch. Use --- between messages."></textarea>
+        </label>
+
+        <div class="actions">
+          <button id="generateBtn" type="button">Generate Diagnostic</button>
+          <button id="sampleBtn" type="button" class="secondary">Load Sample CSV</button>
+          <button id="pdfBtn" type="button" class="secondary" disabled>Download PDF Report</button>
+        </div>
+
+        <p id="status" class="status"></p>
+      </section>
+
+      <aside class="side card">
+        <h2>Call Playbook</h2>
+        <ul>
+          <li>Use a 7-14 day sample for directional decisions.</li>
+          <li>Keep 100-300 items max to stay representative and fast.</li>
+          <li>Focus discussion on repetitive load + SLA clusters.</li>
+          <li>Export PDF at the end and send as follow-up artifact.</li>
+        </ul>
+
+        <div class="side-note">
+          <h3>Conservative assumptions</h3>
+          <p>
+            Handling-time defaults are intentionally modest to avoid overstating AI ROI in discovery calls.
+          </p>
+        </div>
+      </aside>
     </section>
 
-    <section class="panel hidden" id="reportPanel">
+    <section class="panel card hidden reveal" id="reportPanel">
       <h2>Diagnostic Report</h2>
+      <p class="report-subtitle">Snapshot generated from uploaded inbound communication sample.</p>
       <div id="reportRoot"></div>
     </section>
   </main>

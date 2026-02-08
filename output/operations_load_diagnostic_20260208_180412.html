@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Operations Load Diagnostic Report</title>
+  <style>
+    body {
+      font-family: "Segoe UI", Tahoma, sans-serif;
+      margin: 32px;
+      color: #111;
+      line-height: 1.45;
+    }
+    h1, h2, h3 { margin-top: 24px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px 0;
+    }
+    th, td {
+      border: 1px solid #d4d4d4;
+      padding: 8px;
+      text-align: left;
+    }
+    th { background: #f5f5f5; }
+    .kpi {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      padding: 12px;
+      margin: 8px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Operations Load Diagnostic Report</h1>
+  <p>Generated: 2026-02-08 18:04</p>
+
+  <h2>1. Inbound Volume Snapshot</h2>
+  <div class="kpi">Total inbound items analyzed: <strong>20</strong></div>
+  <div class="kpi">Observation window: <strong>7 day(s)</strong></div>
+
+  <h2>2. Work Category Breakdown</h2>
+  <table>
+    <thead><tr><th>Work Category</th><th>Volume</th><th>% of Inbound</th><th>Estimated Minutes</th></tr></thead>
+    <tbody><tr><td>Exception / Delay</td><td>6</td><td>30.0%</td><td>72</td></tr>
+<tr><td>Rate / Pricing</td><td>4</td><td>20.0%</td><td>32</td></tr>
+<tr><td>Tracking / ETA</td><td>4</td><td>20.0%</td><td>16</td></tr>
+<tr><td>Internal Coordination</td><td>3</td><td>15.0%</td><td>18</td></tr>
+<tr><td>Documentation</td><td>3</td><td>15.0%</td><td>21</td></tr></tbody>
+  </table>
+
+  <h2>3. Repetitive vs Exception Work</h2>
+  <table>
+    <thead><tr><th>Work Nature</th><th>Volume</th><th>% of Inbound</th></tr></thead>
+    <tbody><tr><td>Repetitive</td><td>12</td><td>60.0%</td></tr>
+<tr><td>Exception-driven</td><td>8</td><td>40.0%</td></tr></tbody>
+  </table>
+
+  <h2>4. Estimated Operational Load (hours/week)</h2>
+  <div class="kpi">Sample handling time: <strong>159 minutes</strong></div>
+  <div class="kpi">Estimated weekly load: <strong>2.6 hours/week</strong></div>
+
+  <h3>SLA-sensitive Work Clusters</h3>
+  <table>
+    <thead><tr><th>Category</th><th>SLA-sensitive Volume</th><th>Share of SLA-sensitive</th></tr></thead>
+    <tbody><tr><td>Exception / Delay</td><td>2</td><td>40.0%</td></tr>
+<tr><td>Tracking / ETA</td><td>2</td><td>40.0%</td></tr>
+<tr><td>Rate / Pricing</td><td>1</td><td>20.0%</td></tr></tbody>
+  </table>
+
+  <h2>5. Automation Leverage Summary</h2>
+  <ul><li>60.0% of inbound work appears repetitive and is a candidate for templated AI assistance.</li><li>Highest-load categories: Exception / Delay (6), Rate / Pricing (4). Start pilot scope here.</li><li>SLA-sensitive traffic is 25.0%; keep human-in-the-loop controls for these flows.</li><li>Estimated load is 2.6 hours/week; use this as a baseline before committing to heavier automation.</li></ul>
+
+  <h2>Conservative Assumptions Used</h2>
+  <ul><li><strong>Diagnostic mode</strong>: Read-only, one-time static snapshot; no workflow changes.</li><li><strong>Window cap</strong>: 14 day lookback and max 200 items.</li><li><strong>Handling time defaults (minutes/category)</strong>: Tracking / ETA: 4, Exception / Delay: 12, Documentation: 7, Rate / Pricing: 8, Internal Coordination: 6, Other: 5</li><li><strong>Classifier</strong>: heuristic</li><li><strong>Accuracy expectation</strong>: Directionally correct prioritization, not perfect labeling.</li></ul>
+</body>
+</html>

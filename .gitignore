@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+.env
+.venv/
+venv/
+
+# Node (if applicable)
+node_modules/
+
+# OS
+.DS_Store
+
+# Logs
+*.log
+
+# Secrets
+.env.*

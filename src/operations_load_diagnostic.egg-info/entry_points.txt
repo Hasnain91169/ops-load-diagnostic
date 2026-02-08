@@ -1,0 +1,2 @@
+[console_scripts]
+ops-diagnostic = operations_load_diagnostic.cli:main

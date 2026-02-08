@@ -1,0 +1,17 @@
+timestamp: 2026-02-01 08:30
+sender: customer1@shipco.com
+subject: ETA for shipment SHP-101
+body:
+Please confirm ETA for SHP-101 to Dallas today.
+---
+timestamp: 2026-02-01 09:10
+sender: customer2@retailco.com
+subject: Delay on container CNTR-882
+body:
+Container appears delayed at port and customer is waiting.
+---
+timestamp: 2026-02-03 09:45
+sender: customer5@importer.com
+subject: POD request for INV-553
+body:
+Please send POD and signed delivery note.

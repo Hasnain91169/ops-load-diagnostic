@@ -1,0 +1,21 @@
+timestamp,sender,subject,body
+2026-02-01 08:30,customer1@shipco.com,ETA for shipment SHP-101,Please confirm ETA for SHP-101 to Dallas today.
+2026-02-01 09:10,customer2@retailco.com,Delay on container CNTR-882,Container appears delayed at port and customer is waiting.
+2026-02-01 10:05,agent@customs.com,Missing customs document for AWB-9921,Need updated commercial invoice and declaration form.
+2026-02-02 07:55,customer3@manufacture.com,Rate request LAX to ORD,Can you share spot rate for 2 pallets pickup tomorrow.
+2026-02-02 11:20,ops.lead@company.com,Coordinate pickup with warehouse,Please coordinate driver slot with warehouse team for 14:00.
+2026-02-02 14:40,customer1@shipco.com,Tracking status for SHP-101,Where is the shipment now and expected arrival time.
+2026-02-03 08:15,customer4@distributor.com,Urgent: missed delivery window,Delivery missed cutoff and SLA may be breached. Need update ASAP.
+2026-02-03 09:45,customer5@importer.com,POD request for INV-553,Please send POD and signed delivery note.
+2026-02-03 12:00,customer2@retailco.com,ETA update needed,Customer waiting for ETA confirmation before unloading.
+2026-02-04 08:05,finance@customer6.com,Invoice discrepancy on shipment 7782,Charge appears higher than quote; please review pricing.
+2026-02-04 10:50,dispatch@carrier.com,Driver delayed due to traffic,Pickup likely late by 2 hours.
+2026-02-04 15:10,ops@company.com,Internal handover for evening shift,Please hand over open exceptions to evening ops team.
+2026-02-05 09:00,customer7@retailer.com,Rate quote request - urgent,Need urgent quote for same-day move.
+2026-02-05 10:35,customer3@manufacture.com,Shipment stuck at terminal,Shipment is stuck and detention risk starts today.
+2026-02-05 13:25,customer8@exporter.com,Need packing list correction,Please reissue packing list with updated HS code.
+2026-02-06 08:20,customer9@electronics.com,Status update request,Can you provide latest tracking and delivery ETA.
+2026-02-06 11:05,customer10@foodco.com,Temperature excursion exception,Temperature excursion detected; escalate and confirm next steps.
+2026-02-06 16:40,customer11@chemicalco.com,Customs paperwork follow-up,Need copy of permit and customs declaration.
+2026-02-07 08:55,sales@partner.com,Pricing clarification for lane NYC-ATL,Please confirm surcharge and final rate.
+2026-02-07 12:15,ops.supervisor@company.com,Arrange pickup change,Please arrange pickup at alternate dock and coordinate with dispatch.

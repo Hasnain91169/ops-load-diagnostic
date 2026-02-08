@@ -1,0 +1,8 @@
+{
+  "items_processed": 3,
+  "period_days": 3,
+  "estimated_hours_per_week": 0.9,
+  "output_files": {
+    "markdown": "output\\operations_load_diagnostic_20260208_180426.md"
+  }
+}

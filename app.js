@@ -285,17 +285,45 @@ function percent(count, total) {
 
 function limitItems(items, lookbackDays, maxItems) {
   const now = new Date();
-  const threshold = new Date(now);
+  const timestamps = items
+    .map((item) => item.timestamp)
+    .filter((value) => value instanceof Date && !Number.isNaN(value.getTime()));
+
+  const anchorDate = timestamps.length
+    ? new Date(Math.max(...timestamps.map((value) => value.getTime())))
+    : now;
+
+  const threshold = new Date(anchorDate);
   threshold.setDate(threshold.getDate() - lookbackDays);
 
-  return items
-    .filter((item) => !item.timestamp || item.timestamp >= threshold)
-    .sort((a, b) => {
-      const aTime = a.timestamp ? a.timestamp.getTime() : now.getTime();
-      const bTime = b.timestamp ? b.timestamp.getTime() : now.getTime();
-      return bTime - aTime;
-    })
-    .slice(0, maxItems);
+  const sorted = [...items].sort((a, b) => {
+    const aTime = a.timestamp instanceof Date ? a.timestamp.getTime() : anchorDate.getTime();
+    const bTime = b.timestamp instanceof Date ? b.timestamp.getTime() : anchorDate.getTime();
+    return bTime - aTime;
+  });
+
+  const withinWindow = sorted.filter((item) => {
+    if (!(item.timestamp instanceof Date)) {
+      return true;
+    }
+    return item.timestamp >= threshold;
+  });
+
+  if (withinWindow.length > 0) {
+    return {
+      items: withinWindow.slice(0, maxItems),
+      appliedLookback: true,
+      anchorDate,
+      fallbackUsed: false,
+    };
+  }
+
+  return {
+    items: sorted.slice(0, maxItems),
+    appliedLookback: false,
+    anchorDate,
+    fallbackUsed: true,
+  };
 }
 
 function aggregate(classifiedItems, lookbackDays) {
@@ -676,25 +704,33 @@ async function runDiagnostic() {
       throw new Error("No valid inbound items found. Upload a valid file or paste valid input text.");
     }
 
-    const inbound = limitItems(rawItems, lookbackDays, maxItems);
+    const limited = limitItems(rawItems, lookbackDays, maxItems);
+    const inbound = limited.items;
     const classified = inbound.map((item) => ({ item, classification: classifyItem(item) }));
 
     const metrics = aggregate(classified, lookbackDays);
     const leverage = leverageSummary(metrics);
+    const anchorLabel = limited.anchorDate.toISOString().slice(0, 10);
 
     const report = {
       generatedAt: new Date().toLocaleString(),
       metrics,
       leverage,
       assumptions: {
-        window: `${lookbackDays} day lookback and max ${maxItems} items`,
+        window: limited.appliedLookback
+          ? `${lookbackDays} day lookback anchored to latest record (${anchorLabel}), max ${maxItems} items`
+          : `${lookbackDays} day lookback requested; fallback used with latest ${inbound.length} records (anchor ${anchorLabel}).`,
       },
     };
 
     state.report = report;
     renderReport(report);
     el.pdfBtn.disabled = false;
-    setStatus(`Diagnostic complete. ${metrics.totalVolume} items processed.`);
+
+    const statusMessage = limited.fallbackUsed
+      ? `Diagnostic complete. ${metrics.totalVolume} items processed. Fallback applied because records did not match lookback window.`
+      : `Diagnostic complete. ${metrics.totalVolume} items processed (lookback anchored to latest record: ${anchorLabel}).`;
+    setStatus(statusMessage);
   } catch (err) {
     state.report = null;
     el.pdfBtn.disabled = true;
@@ -704,7 +740,6 @@ async function runDiagnostic() {
     el.generateBtn.disabled = false;
   }
 }
-
 async function loadSample() {
   setStatus("Loading sample CSV...");
   try {
@@ -741,4 +776,7 @@ el.pdfBtn.addEventListener("click", () => {
 });
 
 updateFileMeta();
-setStatus("Upload a file or load the sample to begin.");
+setStatus("Upload a file or load the sample to begin. Build: 2026-02-08-2.");
+
+
+
